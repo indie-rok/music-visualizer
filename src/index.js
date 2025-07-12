@@ -20,11 +20,8 @@ class MusicVisualizer {
         this.canvas = null;
         this.audioElement = null;
         this.playPauseBtn = null;
-        this.recordBtn = null;
-        this.exportBtn = null;
         
         // UI state
-        this.isRecording = false;
         this.currentFile = null;
     }
     
@@ -39,8 +36,6 @@ class MusicVisualizer {
             this.canvas = document.getElementById('visualizer-canvas');
             this.audioElement = document.getElementById('audio-element');
             this.playPauseBtn = document.getElementById('play-pause-btn');
-            this.recordBtn = document.getElementById('record-btn');
-            this.exportBtn = document.getElementById('export-btn');
             
             if (!this.canvas) {
                 throw new Error('Canvas element not found');
@@ -126,20 +121,6 @@ class MusicVisualizer {
             });
         }
         
-        // Record button
-        if (this.recordBtn) {
-            this.recordBtn.addEventListener('click', () => {
-                this.toggleRecording();
-            });
-        }
-        
-        // Export button
-        if (this.exportBtn) {
-            this.exportBtn.addEventListener('click', () => {
-                this.exportVideo();
-            });
-        }
-        
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             this.handleKeyboardShortcuts(e);
@@ -159,7 +140,6 @@ class MusicVisualizer {
             // Update UI
             this.playPauseBtn.textContent = 'Play';
             this.playPauseBtn.disabled = false;
-            this.recordBtn.disabled = false;
             
             console.log(`✅ File loaded successfully: ${file.name}`);
             
@@ -193,69 +173,6 @@ class MusicVisualizer {
     }
     
     /**
-     * Toggle recording
-     */
-    toggleRecording() {
-        if (this.isRecording) {
-            this.stopRecording();
-        } else {
-            this.startRecording();
-        }
-    }
-    
-    /**
-     * Start recording
-     */
-    startRecording() {
-        try {
-            // TODO: Implement MediaRecorder for video recording
-            this.isRecording = true;
-            this.recordBtn.textContent = 'Stop Recording';
-            this.recordBtn.style.backgroundColor = '#f44336';
-            this.exportBtn.classList.remove('hidden');
-            
-            console.log('🔴 Recording started');
-            
-        } catch (error) {
-            console.error('❌ Recording failed:', error);
-            this.showError(`Recording failed: ${error.message}`);
-        }
-    }
-    
-    /**
-     * Stop recording
-     */
-    stopRecording() {
-        try {
-            // TODO: Stop MediaRecorder and process video
-            this.isRecording = false;
-            this.recordBtn.textContent = 'Record';
-            this.recordBtn.style.backgroundColor = '#4CAF50';
-            
-            console.log('⏹️ Recording stopped');
-            
-        } catch (error) {
-            console.error('❌ Failed to stop recording:', error);
-            this.showError(`Failed to stop recording: ${error.message}`);
-        }
-    }
-    
-    /**
-     * Export video
-     */
-    exportVideo() {
-        try {
-            // TODO: Implement video export functionality
-            console.log('📤 Exporting video...');
-            this.showMessage('Export functionality coming soon!');
-            
-        } catch (error) {
-            console.error('❌ Export failed:', error);
-            this.showError(`Export failed: ${error.message}`);
-        }
-    }
-    
-    /**
      * Handle keyboard shortcuts
      */
     handleKeyboardShortcuts(event) {
@@ -263,12 +180,6 @@ class MusicVisualizer {
             case 'Space':
                 event.preventDefault();
                 this.togglePlayback();
-                break;
-            case 'KeyR':
-                if (event.ctrlKey || event.metaKey) {
-                    event.preventDefault();
-                    this.toggleRecording();
-                }
                 break;
             case 'Digit1':
                 this.visualizationController?.setVisualizationMode('spectrum');

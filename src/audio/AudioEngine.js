@@ -11,6 +11,7 @@ export class AudioEngine {
         this.audioElement = null;
         this.isInitialized = false;
         this.isPlaying = false;
+        this.fileURL = null;
         
         // FFT configuration
         this.fftSize = 2048;
@@ -153,9 +154,14 @@ export class AudioEngine {
             this.audioElement = document.getElementById('audio-element') || document.createElement('audio');
             this.audioElement.crossOrigin = 'anonymous';
             
+            // Clean up previous file URL if exists
+            if (this.fileURL) {
+                URL.revokeObjectURL(this.fileURL);
+            }
+            
             // Load file
-            const fileURL = URL.createObjectURL(file);
-            this.audioElement.src = fileURL;
+            this.fileURL = URL.createObjectURL(file);
+            this.audioElement.src = this.fileURL;
             
             // Wait for metadata to load
             await new Promise((resolve, reject) => {
@@ -177,9 +183,6 @@ export class AudioEngine {
             
             console.log(`🎵 Audio file loaded: ${file.name}`);
             console.log(`⏱️ Duration: ${this.audioElement.duration.toFixed(2)}s`);
-            
-            // Clean up object URL
-            URL.revokeObjectURL(fileURL);
             
             return true;
             
@@ -374,6 +377,11 @@ export class AudioEngine {
         
         if (this.audioContext && this.audioContext.state !== 'closed') {
             this.audioContext.close();
+        }
+        
+        if (this.fileURL) {
+            URL.revokeObjectURL(this.fileURL);
+            this.fileURL = null;
         }
         
         this.isInitialized = false;
