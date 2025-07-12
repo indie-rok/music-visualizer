@@ -6,6 +6,8 @@
 import { AudioEngine } from './audio/AudioEngine.js';
 import { BeatDetection } from './audio/BeatDetection.js';
 import { FileDropzone } from './ui/FileDropzone.js';
+import { PresetManager } from './presets/PresetManager.js';
+import { VideoExporter } from './export/VideoExporter.js';
 
 console.log('🎵 Music Visualizer Loading...');
 
@@ -14,11 +16,17 @@ class MusicVisualizer {
         this.audioEngine = null;
         this.beatDetection = null;
         this.fileDropzone = null;
+        this.presetManager = null;
+        this.videoExporter = null;
         this.isInitialized = false;
         
         // DOM elements
         this.audioElement = null;
         this.playPauseBtn = null;
+        this.instagramCanvas = null;
+        this.presetSelect = null;
+        this.exportVideoBtn = null;
+        this.themeSelect = null;
         
         // UI state
         this.currentFile = null;
@@ -35,12 +43,29 @@ class MusicVisualizer {
             // Get DOM elements
             this.audioElement = document.getElementById('audio-element');
             this.playPauseBtn = document.getElementById('play-pause-btn');
+            this.instagramCanvas = document.getElementById('instagram-canvas');
+            this.presetSelect = document.getElementById('preset-select');
+            this.exportVideoBtn = document.getElementById('export-video-btn');
+            this.themeSelect = document.getElementById('theme-select');
+            
+            if (!this.instagramCanvas) {
+                throw new Error('Instagram canvas element not found');
+            }
             
             // Initialize audio engine
             this.audioEngine = new AudioEngine();
             
             // Initialize beat detection
             this.beatDetection = new BeatDetection(this.audioEngine);
+            
+            // Initialize preset manager
+            this.presetManager = new PresetManager(this.instagramCanvas, this.audioEngine, this.beatDetection);
+            
+            // Initialize video exporter
+            this.videoExporter = new VideoExporter(this.instagramCanvas);
+            
+            // Load default preset
+            await this.presetManager.loadPreset('milkdrop');
             
             // Start audio analysis loop
             this.startAnalysisLoop();
@@ -84,6 +109,27 @@ class MusicVisualizer {
             });
         }
         
+        // Preset selection
+        if (this.presetSelect) {
+            this.presetSelect.addEventListener('change', (e) => {
+                this.loadPreset(e.target.value);
+            });
+        }
+        
+        // Export video button
+        if (this.exportVideoBtn) {
+            this.exportVideoBtn.addEventListener('click', () => {
+                this.exportVideo();
+            });
+        }
+        
+        // Theme selection
+        if (this.themeSelect) {
+            this.themeSelect.addEventListener('change', (e) => {
+                this.setColorTheme(e.target.value);
+            });
+        }
+        
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             this.handleKeyboardShortcuts(e);
@@ -103,6 +149,11 @@ class MusicVisualizer {
             // Update UI
             this.playPauseBtn.textContent = 'Play';
             this.playPauseBtn.disabled = false;
+            
+            // Enable export button
+            if (this.exportVideoBtn) {
+                this.exportVideoBtn.disabled = false;
+            }
             
             console.log(`✅ File loaded successfully: ${file.name}`);
             
@@ -125,9 +176,11 @@ class MusicVisualizer {
             if (this.audioEngine.isPlaying) {
                 this.audioEngine.pause();
                 this.playPauseBtn.textContent = 'Play';
+                this.presetManager.stop();
             } else {
                 await this.audioEngine.play();
                 this.playPauseBtn.textContent = 'Pause';
+                this.presetManager.start();
             }
         } catch (error) {
             console.error('❌ Playback error:', error);
@@ -135,7 +188,95 @@ class MusicVisualizer {
         }
     }
     
+    /**
+     * Load a visualization preset
+     */
+    async loadPreset(presetName) {
+        try {
+            const wasRunning = this.presetManager.isRunning();
+            
+            await this.presetManager.loadPreset(presetName);
+            
+            // If a preset was running, start the new one
+            if (wasRunning) {
+                this.presetManager.start();
+            }
+            
+            console.log(`🎨 Switched to preset: ${presetName}`);
+            
+        } catch (error) {
+            console.error('❌ Failed to load preset:', error);
+            this.showError(`Failed to load preset: ${error.message}`);
+        }
+    }
     
+    /**
+     * Export visualization as video
+     */
+    async exportVideo() {
+        if (!this.videoExporter || !this.audioEngine || !this.currentFile) {
+            this.showError('Cannot create video: No audio file loaded');
+            return;
+        }
+        
+        const audioElement = this.audioEngine.audioElement;
+        if (!audioElement || !audioElement.duration) {
+            this.showError('Audio not ready. Please wait for the file to load completely.');
+            return;
+        }
+        
+        try {
+            // Update UI
+            this.exportVideoBtn.disabled = true;
+            this.exportVideoBtn.textContent = 'Creating Video...';
+            
+            // Stop current playback
+            const wasPlaying = !audioElement.paused;
+            if (wasPlaying) {
+                this.audioEngine.pause();
+                this.presetManager.stop();
+            }
+            
+            // Reset to beginning
+            audioElement.currentTime = 0;
+            
+            // Start visualization for recording
+            this.presetManager.start();
+            await this.audioEngine.play();
+            
+            // Start recording
+            await this.videoExporter.recordFullSong(audioElement, (progress) => {
+                this.exportVideoBtn.textContent = `Creating Video... ${Math.round(progress)}%`;
+            });
+            
+            this.showMessage('🎉 Music video created successfully! Download starting...');
+            
+        } catch (error) {
+            console.error('❌ Video export failed:', error);
+            this.showError(`Failed to create video: ${error.message}`);
+        } finally {
+            // Restore UI
+            this.exportVideoBtn.disabled = false;
+            this.exportVideoBtn.textContent = 'Export Video';
+            
+            // Stop playback and visualization
+            this.audioEngine.pause();
+            this.presetManager.stop();
+            audioElement.currentTime = 0;
+            this.playPauseBtn.textContent = 'Play';
+        }
+    }
+    
+    /**
+     * Set color theme
+     */
+    setColorTheme(themeName) {
+        const currentPreset = this.presetManager.getCurrentPreset();
+        if (currentPreset && typeof currentPreset.setColorTheme === 'function') {
+            currentPreset.setColorTheme(themeName);
+            console.log(`🎨 Theme changed to: ${themeName}`);
+        }
+    }
     
     /**
      * Handle keyboard shortcuts
@@ -180,6 +321,13 @@ class MusicVisualizer {
             this.fileDropzone.destroy();
         }
         
+        if (this.presetManager) {
+            this.presetManager.destroy();
+        }
+        
+        if (this.videoExporter) {
+            this.videoExporter.destroy();
+        }
         
         this.stopAnalysisLoop();
         

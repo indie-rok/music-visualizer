@@ -23,18 +23,31 @@
             position: relative;
             width: 100vw;
             height: 100vh;
+            display: flex;
         }
         
         
+        .left-column {
+            flex: 1;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+        
+        .right-column {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
         #controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
             background: rgba(0, 0, 0, 0.7);
             padding: 20px;
             border-radius: 10px;
             backdrop-filter: blur(10px);
+            margin-bottom: 20px;
         }
         
         .control-group {
@@ -80,16 +93,10 @@
         }
         
         #audio-stats {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
             background: rgba(0, 0, 0, 0.8);
             padding: 15px;
             border-radius: 10px;
             backdrop-filter: blur(10px);
-            min-width: 600px;
             font-family: 'Courier New', monospace;
             display: flex;
             gap: 30px;
@@ -107,6 +114,20 @@
             text-align: center;
             border-bottom: 1px solid #555;
             padding-bottom: 5px;
+        }
+        
+        #visualizer-container {
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #instagram-canvas {
+            display: block;
+            background: #000;
+            width: 400px;
+            height: 400px;
         }
         
         .stat-row {
@@ -139,130 +160,157 @@
 </head>
 <body>
     <div id="app">
-        
-        <div id="controls">
-            <div class="control-group">
-                <label for="audio-upload">Load Audio File:</label>
-                <input type="file" id="audio-upload" accept="audio/*">
-            </div>
-            
-            <div class="control-group">
-                <button id="play-pause-btn">Play</button>
-            </div>
-        </div>
-        
-        <div id="audio-stats">
-            <!-- Audio Analysis Column -->
-            <div class="stats-column">
-                <div class="column-title">Audio Analysis</div>
-                
-                <div class="stat-row">
-                    <span class="stat-label">BPM:</span>
-                    <span class="stat-value" id="bpm-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">RMS Energy:</span>
-                    <span class="stat-value" id="rms-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Zero Crossing Rate:</span>
-                    <span class="stat-value" id="zcr-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Confidence:</span>
-                    <span class="stat-value" id="confidence-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Kicks:</span>
-                    <span class="stat-value" id="kick-count">0</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Snares:</span>
-                    <span class="stat-value" id="snare-count">0</span>
+        <!-- Left Column: Controls and Stats -->
+        <div class="left-column">
+            <div id="controls">
+                <div class="control-group">
+                    <label for="audio-upload">Load Audio File:</label>
+                    <input type="file" id="audio-upload" accept="audio/*">
                 </div>
                 
-                <!-- Frequency Band Data -->
-                <div class="stat-row">
-                    <span class="stat-label">Sub Bass (20-60Hz):</span>
-                    <span class="stat-value" id="subbass-value">--</span>
+                <div class="control-group">
+                    <label for="preset-select">Visualizer Preset:</label>
+                    <select id="preset-select">
+                        <option value="milkdrop">Milkdrop</option>
+                    </select>
                 </div>
-                <div class="stat-row">
-                    <span class="stat-label">Bass (60-250Hz):</span>
-                    <span class="stat-value" id="bass-value">--</span>
+                
+                <div class="control-group">
+                    <label for="theme-select">Color Theme:</label>
+                    <select id="theme-select">
+                        <option value="cyberpunk">Cyberpunk</option>
+                        <option value="neon">Neon Dreams</option>
+                        <option value="beach">Peaceful Beach</option>
+                        <option value="sunset">Warm Sunset</option>
+                        <option value="forest">Deep Forest</option>
+                    </select>
                 </div>
-                <div class="stat-row">
-                    <span class="stat-label">Low Mids (250-500Hz):</span>
-                    <span class="stat-value" id="lowmids-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Mids (500-2000Hz):</span>
-                    <span class="stat-value" id="mids-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">High Mids (2-4kHz):</span>
-                    <span class="stat-value" id="highmids-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Treble (4-20kHz):</span>
-                    <span class="stat-value" id="treble-value">--</span>
+                
+                <div class="control-group">
+                    <button id="play-pause-btn">Play</button>
+                    <button id="export-video-btn" disabled>Export Video</button>
                 </div>
             </div>
             
-            <!-- Beat Detection Column -->
-            <div class="stats-column">
-                <div class="column-title">Beat Detection</div>
+            <div id="audio-stats">
+                <!-- Audio Analysis Column -->
+                <div class="stats-column">
+                    <div class="column-title">Audio Analysis</div>
+                    
+                    <div class="stat-row">
+                        <span class="stat-label">BPM:</span>
+                        <span class="stat-value" id="bpm-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">RMS Energy:</span>
+                        <span class="stat-value" id="rms-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Zero Crossing Rate:</span>
+                        <span class="stat-value" id="zcr-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Confidence:</span>
+                        <span class="stat-value" id="confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kicks:</span>
+                        <span class="stat-value" id="kick-count">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snares:</span>
+                        <span class="stat-value" id="snare-count">0</span>
+                    </div>
+                    
+                    <!-- Frequency Band Data -->
+                    <div class="stat-row">
+                        <span class="stat-label">Sub Bass (20-60Hz):</span>
+                        <span class="stat-value" id="subbass-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Bass (60-250Hz):</span>
+                        <span class="stat-value" id="bass-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Low Mids (250-500Hz):</span>
+                        <span class="stat-value" id="lowmids-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mids (500-2000Hz):</span>
+                        <span class="stat-value" id="mids-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">High Mids (2-4kHz):</span>
+                        <span class="stat-value" id="highmids-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Treble (4-20kHz):</span>
+                        <span class="stat-value" id="treble-value">--</span>
+                    </div>
+                </div>
                 
-                <div class="stat-row">
-                    <span class="stat-label">Spectral Flux:</span>
-                    <span class="stat-value" id="spectral-flux-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Spectral Centroid:</span>
-                    <span class="stat-value" id="spectral-centroid-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Kick Detected:</span>
-                    <span class="stat-value" id="kick-detected-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Snare Detected:</span>
-                    <span class="stat-value" id="snare-detected-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Kick Energy:</span>
-                    <span class="stat-value" id="kick-energy-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Snare Energy:</span>
-                    <span class="stat-value" id="snare-energy-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Beat Confidence:</span>
-                    <span class="stat-value" id="beat-confidence-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Kick Confidence:</span>
-                    <span class="stat-value" id="kick-confidence-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Snare Confidence:</span>
-                    <span class="stat-value" id="snare-confidence-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Tempo Confidence:</span>
-                    <span class="stat-value" id="tempo-confidence-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Adaptive Threshold:</span>
-                    <span class="stat-value" id="adaptive-threshold-value">--</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Noisiness:</span>
-                    <span class="stat-value" id="noisiness-value">--</span>
+                <!-- Beat Detection Column -->
+                <div class="stats-column">
+                    <div class="column-title">Beat Detection</div>
+                    
+                    <div class="stat-row">
+                        <span class="stat-label">Spectral Flux:</span>
+                        <span class="stat-value" id="spectral-flux-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Spectral Centroid:</span>
+                        <span class="stat-value" id="spectral-centroid-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kick Detected:</span>
+                        <span class="stat-value" id="kick-detected-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snare Detected:</span>
+                        <span class="stat-value" id="snare-detected-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kick Energy:</span>
+                        <span class="stat-value" id="kick-energy-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snare Energy:</span>
+                        <span class="stat-value" id="snare-energy-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Beat Confidence:</span>
+                        <span class="stat-value" id="beat-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kick Confidence:</span>
+                        <span class="stat-value" id="kick-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snare Confidence:</span>
+                        <span class="stat-value" id="snare-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Tempo Confidence:</span>
+                        <span class="stat-value" id="tempo-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Adaptive Threshold:</span>
+                        <span class="stat-value" id="adaptive-threshold-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Noisiness:</span>
+                        <span class="stat-value" id="noisiness-value">--</span>
+                    </div>
                 </div>
             </div>
         </div>
         
+        <!-- Right Column: Instagram Canvas -->
+        <div class="right-column">
+            <div id="visualizer-container">
+                <canvas id="instagram-canvas" width="1080" height="1080"></canvas>
+            </div>
+        </div>
         
         <audio id="audio-element" crossorigin="anonymous" style="display: none;"></audio>
     </div>
