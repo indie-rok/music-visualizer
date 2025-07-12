@@ -5,6 +5,7 @@
 import { MilkdropPreset } from './MilkdropPreset.js';
 import { GeissPreset } from './GeissPreset.js';
 import { ExplosionPreset } from './ExplosionPreset.js';
+import { DWavePreset } from './DWavePreset.js';
 
 export class PresetManager {
     constructor(canvas, audioEngine, beatDetection) {
@@ -43,6 +44,12 @@ export class PresetManager {
             name: 'Explosion',
             description: 'MilkDrop-style plasma visualizer with psychedelic effects',
             class: ExplosionPreset
+        });
+        
+        this.presets.set('dwave', {
+            name: 'D-Wave',
+            description: 'Simplified ocean visualizer with waves and jumping fish',
+            class: DWavePreset
         });
         
         // Future presets can be added here:

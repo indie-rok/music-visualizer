@@ -47,6 +47,7 @@ class MusicVisualizer {
             this.presetSelect = document.getElementById('preset-select');
             this.exportVideoBtn = document.getElementById('export-video-btn');
             this.themeSelect = document.getElementById('theme-select');
+            this.copyDebugBtn = document.getElementById('copy-debug-btn');
             
             if (!this.instagramCanvas) {
                 throw new Error('Instagram canvas element not found');
@@ -127,6 +128,13 @@ class MusicVisualizer {
         if (this.themeSelect) {
             this.themeSelect.addEventListener('change', (e) => {
                 this.setColorTheme(e.target.value);
+            });
+        }
+        
+        // Copy debug data button
+        if (this.copyDebugBtn) {
+            this.copyDebugBtn.addEventListener('click', () => {
+                this.copyDebugDataToClipboard();
             });
         }
         
@@ -290,6 +298,114 @@ class MusicVisualizer {
         }
     }
     
+    /**
+     * Copy all debug data to clipboard
+     */
+    async copyDebugDataToClipboard() {
+        try {
+            if (!this.audioEngine || !this.beatDetection) {
+                this.showError('Audio engine not initialized');
+                return;
+            }
+
+            // Get current audio analysis data
+            const analysisData = this.audioEngine.getAnalysisData();
+            const beatData = this.beatDetection.analyzeFrame();
+            const rmsStats = this.audioEngine.getRMSStats();
+            const zcrStats = this.audioEngine.getZCRStats();
+            const confidenceStats = this.beatDetection.getConfidenceStats();
+
+            // Format debug data
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                audioAnalysis: {
+                    bpm: beatData?.bpm || 0,
+                    rmsEnergy: rmsStats?.current || 0,
+                    zeroCrossingRate: zcrStats?.current || 0,
+                    confidence: (confidenceStats?.overall || 0) * 100,
+                    kicks: this.beatDetection.kickCount || 0,
+                    snares: this.beatDetection.snareCount || 0
+                },
+                frequencyBands: {
+                    subBass: analysisData?.bands?.subBass || 0,
+                    bass: analysisData?.bands?.bass || 0,
+                    lowMids: analysisData?.bands?.lowMids || 0,
+                    mids: analysisData?.bands?.mids || 0,
+                    highMids: analysisData?.bands?.highMids || 0,
+                    treble: analysisData?.bands?.treble || 0
+                },
+                beatDetection: {
+                    spectralFlux: beatData?.spectralFlux || 0,
+                    spectralCentroid: beatData?.spectralCentroid || 0,
+                    kickDetected: beatData?.kickDetected || false,
+                    snareDetected: beatData?.snareDetected || false,
+                    kickEnergy: beatData?.kickEnergy || 0,
+                    snareEnergy: beatData?.snareEnergy || 0,
+                    beatConfidence: (confidenceStats?.beat || 0) * 100,
+                    kickConfidence: (confidenceStats?.kick || 0) * 100,
+                    snareConfidence: (confidenceStats?.snare || 0) * 100,
+                    tempoConfidence: (confidenceStats?.tempo || 0) * 100,
+                    adaptiveThreshold: beatData?.adaptiveThreshold || 0,
+                    noisiness: zcrStats?.noisiness || 'unknown'
+                },
+                presetInfo: {
+                    currentPreset: this.presetManager?.getCurrentPresetName() || 'none',
+                    isPlaying: analysisData?.isPlaying || false
+                }
+            };
+
+            // Convert to formatted text
+            const debugText = `Music Visualizer Debug Data
+Generated: ${debugData.timestamp}
+
+Audio Analysis:
+- BPM: ${debugData.audioAnalysis.bpm}
+- RMS Energy: ${debugData.audioAnalysis.rmsEnergy.toFixed(3)}
+- Zero Crossing Rate: ${debugData.audioAnalysis.zeroCrossingRate.toFixed(3)}
+- Confidence: ${debugData.audioAnalysis.confidence.toFixed(1)}%
+- Kicks: ${debugData.audioAnalysis.kicks}
+- Snares: ${debugData.audioAnalysis.snares}
+
+Frequency Bands:
+- Sub Bass (20-60Hz): ${debugData.frequencyBands.subBass.toFixed(2)}
+- Bass (60-250Hz): ${debugData.frequencyBands.bass.toFixed(2)}
+- Low Mids (250-500Hz): ${debugData.frequencyBands.lowMids.toFixed(2)}
+- Mids (500-2000Hz): ${debugData.frequencyBands.mids.toFixed(2)}
+- High Mids (2-4kHz): ${debugData.frequencyBands.highMids.toFixed(2)}
+- Treble (4-20kHz): ${debugData.frequencyBands.treble.toFixed(2)}
+
+Beat Detection:
+- Spectral Flux: ${debugData.beatDetection.spectralFlux.toFixed(3)}
+- Spectral Centroid: ${debugData.beatDetection.spectralCentroid.toFixed(3)}
+- Kick Detected: ${debugData.beatDetection.kickDetected ? 'YES' : 'NO'}
+- Snare Detected: ${debugData.beatDetection.snareDetected ? 'YES' : 'NO'}
+- Kick Energy: ${debugData.beatDetection.kickEnergy.toFixed(2)}
+- Snare Energy: ${debugData.beatDetection.snareEnergy.toFixed(2)}
+- Beat Confidence: ${debugData.beatDetection.beatConfidence.toFixed(1)}%
+- Kick Confidence: ${debugData.beatDetection.kickConfidence.toFixed(1)}%
+- Snare Confidence: ${debugData.beatDetection.snareConfidence.toFixed(1)}%
+- Tempo Confidence: ${debugData.beatDetection.tempoConfidence.toFixed(1)}%
+- Adaptive Threshold: ${debugData.beatDetection.adaptiveThreshold.toFixed(3)}
+- Noisiness: ${debugData.beatDetection.noisiness}
+
+Preset Info:
+- Current Preset: ${debugData.presetInfo.currentPreset}
+- Is Playing: ${debugData.presetInfo.isPlaying ? 'YES' : 'NO'}
+
+JSON Data:
+${JSON.stringify(debugData, null, 2)}`;
+
+            // Copy to clipboard
+            await navigator.clipboard.writeText(debugText);
+            this.showMessage('Debug data copied to clipboard!');
+            console.log('📋 Debug data copied to clipboard');
+
+        } catch (error) {
+            console.error('Failed to copy debug data:', error);
+            this.showError(`Failed to copy debug data: ${error.message}`);
+        }
+    }
+
     /**
      * Show error message
      */
