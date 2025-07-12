@@ -311,8 +311,8 @@ class MusicVisualizer {
             // Get current audio analysis data
             const analysisData = this.audioEngine.getAnalysisData();
             const beatData = this.beatDetection.analyzeFrame();
-            const rmsStats = this.audioEngine.getRMSStats();
-            const zcrStats = this.audioEngine.getZCRStats();
+            const rmsStats = this.beatDetection.getRMSStats();
+            const zcrStats = this.beatDetection.getZCRStats();
             const confidenceStats = this.beatDetection.getConfidenceStats();
 
             // Format debug data
