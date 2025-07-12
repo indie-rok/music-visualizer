@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Real-time music visualizer with audio analysis and video export">
+    <title>Music Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        #app {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #visualizer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+        }
+        
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 200px;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        #audio-upload {
+            margin-bottom: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <canvas id="visualizer-canvas"></canvas>
+        
+        <div id="controls">
+            <div class="control-group">
+                <label for="audio-upload">Load Audio File:</label>
+                <input type="file" id="audio-upload" accept="audio/*">
+            </div>
+            
+            <div class="control-group">
+                <label for="genre-select">Genre:</label>
+                <select id="genre-select">
+                    <option value="electronic">Electronic</option>
+                    <option value="rock">Rock</option>
+                    <option value="hip-hop">Hip-hop</option>
+                    <option value="jazz">Jazz</option>
+                    <option value="classical">Classical</option>
+                    <option value="synth-pop">Synth-pop</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="energy-slider">Energy Level: <span id="energy-value">5</span></label>
+                <input type="range" id="energy-slider" min="1" max="10" value="5">
+            </div>
+            
+            <div class="control-group">
+                <label for="mood-select">Mood:</label>
+                <select id="mood-select">
+                    <option value="calm">Calm</option>
+                    <option value="energetic">Energetic</option>
+                    <option value="melancholic">Melancholic</option>
+                    <option value="uplifting">Uplifting</option>
+                    <option value="aggressive">Aggressive</option>
+                    <option value="dreamy">Dreamy</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="color-palette">Color Palette:</label>
+                <select id="color-palette">
+                    <option value="sunset-ocean">Sunset-Ocean</option>
+                    <option value="neon">Neon</option>
+                    <option value="monochrome">Monochrome</option>
+                    <option value="vibrant">Vibrant</option>
+                    <option value="muted">Muted</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <button id="play-pause-btn">Play</button>
+                <button id="record-btn">Record</button>
+                <button id="export-btn" class="hidden">Export</button>
+            </div>
+        </div>
+        
+        <audio id="audio-element" crossorigin="anonymous" style="display: none;"></audio>
+    </div>
+    
+    <script type="module" src="/src/index.js"></script>
+</body>
+</html>

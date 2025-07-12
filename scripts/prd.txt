@@ -1,0 +1,162 @@
+Here's a comprehensive PRD (Product Requirements Document) for your music visualizer engine:
+
+Music Visualizer Engine - PRD
+
+1. Product Overview
+
+Vision
+Create a JavaScript-based music visualization engine that generates AI-free, customizable video content for musicians' social media platforms, similar to classic Winamp visualizers but optimized for modern social media formats.
+
+Problem Statement
+Musicians need quick, cost-effective ways to create engaging visual content for their music on social media. Current AI video generation tools are expensive, inconsistent, and require complex prompts. A deterministic, metadata-driven approach would provide reliable, instant results.
+
+Target Users
+- Independent musicians and producers
+- Social media content creators
+- Music streaming platforms
+- DJ/Live performance artists
+
+2. Core Features
+
+2.1 Audio Analysis Engine
+Priority: P0 (Must Have)
+
+- Real-time FFT Analysis
+  - Sample rate: 44.1kHz
+  - FFT size: 1024-4096 bins
+  - Update rate: 60fps minimum
+
+- Frequency Band Extraction
+  - Bass: 20-250Hz
+  - Mids: 250Hz-4kHz
+  - Treble: 4kHz-20kHz
+  - Sub-bass: 20-60Hz (optional)
+
+- Beat Detection
+  - Kick drum detection
+  - Snare/clap detection
+  - Tempo estimation (BPM)
+  - Beat confidence scoring
+
+- Audio Features
+  - RMS energy levels
+  - Peak detection
+  - Spectral centroid (brightness)
+  - Zero crossing rate
+
+2.2 Metadata Integration System
+Priority: P0 (Must Have)
+
+- Song Metadata Inputs
+  - Genre (dropdown): Synth-pop, Rock, Electronic, Hip-hop, Jazz, Classical, etc.
+  - Energy Level (slider): 1-10 scale
+  - Mood (dropdown): Calm, Energetic, Melancholic, Uplifting, Aggressive, Dreamy
+  - Tempo (auto-detected + manual override)
+
+- Visual Configuration
+  - Color Palette: Sunset-Ocean, Neon, Monochrome, Vibrant, Muted, Custom
+  - Visual Style: Abstract, Geometric, Particle, Frequency Bars, Flowing
+  - Complexity Level: Simple, Moderate, Complex
+
+2.3 Visualization Engine
+Priority: P0 (Must Have)
+
+- Core Visual Types
+  - Frequency spectrum bars (classic Winamp style)
+  - Particle systems (beat-reactive)
+  - Geometric shapes (rotating, scaling, morphing)
+  - Flowing/liquid animations
+  - Gradient backgrounds
+
+- Audio-Reactive Properties
+  - Size scaling based on frequency amplitude
+  - Color shifts based on spectral content
+  - Movement speed synced to BPM
+  - Opacity changes with beat detection
+  - Rotation/animation tied to energy levels
+
+2.4 Video Export System
+Priority: P0 (Must Have)
+
+- Export Formats
+  - MP4 (H.264)
+  - WebM (VP9)
+  - Quality options: 720p, 1080p
+
+- Social Media Formats
+  - Instagram Square (1:1, 1080x1080)
+  - Instagram Stories (9:16, 1080x1920)
+  - TikTok (9:16, 1080x1920)
+  - YouTube Shorts (9:16, 1080x1920)
+  - Twitter (16:9, 1280x720)
+
+- Duration Options
+  - 10-second clips (primary)
+  - 15-second clips
+  - 30-second clips
+  - Custom duration
+
+3. Technical Requirements
+
+3.1 Technology Stack
+- Frontend: Pure JavaScript (ES6+), HTML5, CSS3
+- Audio Processing: Web Audio API
+- Graphics: Canvas API, WebGL (for performance)
+- Video Export: MediaRecorder API, FFmpeg.js (fallback)
+- File Handling: File API, Drag & Drop API
+
+3.2 Performance Requirements
+- Real-time Rendering: 60fps minimum
+- Audio Latency: 98%
+- Cross-browser compatibility: >95% feature parity
+- Memory efficiency: 4/5 rating
+- Export completion rate: >90%
+- Preset usage rate: >60% of users
+
+6. Implementation Phases
+
+Phase 1: MVP (4-6 weeks)
+- Basic audio analysis (FFT, beat detection)
+- 2-3 core visualization types
+- Simple metadata inputs
+- Basic video export (MP4, 1080p)
+
+Phase 2: Enhancement (3-4 weeks)
+- Additional visualization effects
+- Advanced color palette system
+- Multiple export formats
+- Performance optimizations
+
+Phase 3: Advanced Features (4-6 weeks)
+- Custom preset creation
+- Advanced audio analysis features
+- Batch processing
+- API integration capabilities
+
+7. Technical Risks & Mitigation
+
+7.1 High Risk
+- Browser Audio API limitations
+  - Mitigation: Fallback implementations, progressive enhancement
+- Video export performance
+  - Mitigation: WebGL acceleration, quality vs. speed options
+
+7.2 Medium Risk
+- Cross-browser compatibility
+  - Mitigation: Extensive testing, polyfills
+- Memory management with large files
+  - Mitigation: Streaming processing, garbage collection optimization
+
+8. Competitive Analysis
+
+8.1 Current Solutions
+- AI Video Generators: Expensive, inconsistent, slow
+- Traditional Video Editors: Complex, time-consuming
+- Music Visualizer Software: Desktop-only, limited export options
+
+8.2 Competitive Advantages
+- Instant generation: No waiting for AI processing
+- Consistent results: Same input = same output
+- Cost-effective: No per-generation fees
+- Web-based: No software installation required
+- Customizable: Full control over visual parameters

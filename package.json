@@ -1,0 +1,43 @@
+{
+  "name": "music-visualizer",
+  "version": "1.0.0",
+  "description": "JavaScript-based music visualizer engine with real-time audio analysis and video export capabilities",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.ts",
+    "format": "prettier --write src/**/*.{js,ts,css,html}"
+  },
+  "keywords": [
+    "music",
+    "visualizer",
+    "audio",
+    "web-audio-api",
+    "canvas",
+    "webgl",
+    "visualization",
+    "real-time"
+  ],
+  "author": "Music Visualizer Team",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11"
+  ]
+}

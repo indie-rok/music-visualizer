@@ -1,0 +1,93 @@
+{
+	"meta": {
+		"generatedAt": "2025-07-12T10:10:34.430Z",
+		"tasksAnalyzed": 10,
+		"totalTasks": 10,
+		"analysisCount": 10,
+		"thresholdScore": 5,
+		"projectName": "Task Master",
+		"usedResearch": false
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Setup Project Repository and Development Environment",
+			"complexityScore": 4,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down the project setup into discrete configuration steps: directory structure creation, package.json initialization, development server setup, build tool configuration, HTML template creation, and git repository initialization.",
+			"reasoning": "Standard project setup with well-defined steps. Moderate complexity due to multiple tool configurations but each step is straightforward."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Implement Core Audio Analysis Engine",
+			"complexityScore": 8,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Divide into technical audio processing components: AudioContext initialization, AnalyserNode configuration, frequency band extraction algorithms, real-time processing loop, file loading system, drag-and-drop interface, data validation, and performance optimization.",
+			"reasoning": "High complexity due to Web Audio API intricacies, real-time processing requirements, and multiple audio format support. Requires deep understanding of digital signal processing."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Develop Beat Detection and Tempo Analysis",
+			"complexityScore": 9,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Split into specialized audio analysis algorithms: kick drum detection implementation, snare detection system, BPM estimation using autocorrelation, beat confidence scoring, RMS energy calculation, spectral centroid analysis, and zero crossing rate computation.",
+			"reasoning": "Very high complexity involving advanced signal processing algorithms, mathematical computations, and genre-specific audio analysis. Requires expertise in music information retrieval."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "Build Metadata Integration System",
+			"complexityScore": 5,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Create individual UI components: genre selection dropdown, energy level slider with real-time preview, mood selection interface, color palette selector, visual style options, and complexity level controls with data binding.",
+			"reasoning": "Moderate complexity involving multiple UI components and data binding. Straightforward implementation but requires careful UX design and state management."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Implement Core Canvas-based Visualization Engine",
+			"complexityScore": 7,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Build rendering components: Canvas and WebGL context setup, base visualization class architecture, frequency spectrum renderer, particle system foundation, geometric shape engine, gradient background system, and performance monitoring.",
+			"reasoning": "High complexity due to graphics programming, WebGL implementation, and performance requirements. Requires understanding of computer graphics and optimization techniques."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Develop Audio-Reactive Animation System",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Implement animation mappings: amplitude-to-size scaling system, spectral-to-color algorithms, BPM-synchronized movement, beat-triggered opacity changes, energy-based rotation system, and smooth interpolation engine.",
+			"reasoning": "High complexity requiring sophisticated mapping algorithms between audio data and visual properties. Involves real-time processing and smooth animation techniques."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Build Multi-Format Video Export System",
+			"complexityScore": 9,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Create export pipeline: MediaRecorder API implementation, FFmpeg.js fallback system, format conversion engines, social media preset configurations, quality option controls, duration selection interface, audio-video synchronization, and cross-browser compatibility.",
+			"reasoning": "Very high complexity involving video encoding, multiple format support, and browser API limitations. Requires handling of large data streams and format specifications."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Create Preset Management System",
+			"complexityScore": 6,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Build preset features: data structure design, localStorage persistence, gallery UI with thumbnails, import/export functionality, default preset creation, and search/filtering system.",
+			"reasoning": "Moderate-high complexity involving data persistence, UI components, and file operations. Requires careful data structure design and user experience considerations."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "Implement Performance Optimization and Memory Management",
+			"complexityScore": 8,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Optimize performance areas: object pooling implementation, WebGL optimization techniques, adaptive quality system, garbage collection optimization, memory monitoring tools, and performance profiling utilities.",
+			"reasoning": "High complexity requiring deep understanding of JavaScript performance, WebGL optimization, and memory management. Critical for smooth user experience across devices."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Cross-Browser Compatibility and Error Handling",
+			"complexityScore": 7,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Ensure compatibility: feature detection implementation, polyfill integration, fallback system creation, comprehensive error handling, user-friendly error messaging, and browser compatibility detection.",
+			"reasoning": "High complexity due to varying browser implementations and extensive testing requirements. Requires knowledge of browser differences and robust error handling strategies."
+		}
+	]
+}
