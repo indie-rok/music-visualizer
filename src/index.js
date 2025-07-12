@@ -6,8 +6,6 @@
 import { AudioEngine } from './audio/AudioEngine.js';
 import { BeatDetection } from './audio/BeatDetection.js';
 import { FileDropzone } from './ui/FileDropzone.js';
-import { VisualizationController } from './visualization/VisualizationController.js';
-import { VideoExporter } from './export/VideoExporter.js';
 
 console.log('🎵 Music Visualizer Loading...');
 
@@ -15,18 +13,16 @@ class MusicVisualizer {
     constructor() {
         this.audioEngine = null;
         this.beatDetection = null;
-        this.visualizationController = null;
         this.fileDropzone = null;
-        this.videoExporter = null;
         this.isInitialized = false;
         
         // DOM elements
-        this.canvas = null;
         this.audioElement = null;
         this.playPauseBtn = null;
         
         // UI state
         this.currentFile = null;
+        this.analysisLoopId = null;
     }
     
     /**
@@ -37,18 +33,8 @@ class MusicVisualizer {
             console.log('✅ DOM Ready - Initializing visualizer...');
             
             // Get DOM elements
-            this.canvas = document.getElementById('visualizer-canvas');
-            this.instagramCanvas = document.getElementById('instagram-canvas');
             this.audioElement = document.getElementById('audio-element');
             this.playPauseBtn = document.getElementById('play-pause-btn');
-            
-            if (!this.canvas) {
-                throw new Error('Canvas element not found');
-            }
-            
-            if (!this.instagramCanvas) {
-                throw new Error('Instagram canvas element not found');
-            }
             
             // Initialize audio engine
             this.audioEngine = new AudioEngine();
@@ -56,11 +42,9 @@ class MusicVisualizer {
             // Initialize beat detection
             this.beatDetection = new BeatDetection(this.audioEngine);
             
-            // Initialize visualization controller with Instagram canvas
-            this.visualizationController = new VisualizationController(this.canvas, this.audioEngine, this.beatDetection, this.instagramCanvas);
+            // Start audio analysis loop
+            this.startAnalysisLoop();
             
-            // Initialize video exporter for Instagram canvas
-            this.videoExporter = new VideoExporter(this.instagramCanvas);
             
             // Initialize file dropzone
             this.fileDropzone = new FileDropzone(
@@ -71,8 +55,6 @@ class MusicVisualizer {
             // Set up UI event listeners
             this.setupUIEventListeners();
             
-            // Start visualization loop
-            this.visualizationController.start();
             
             this.isInitialized = true;
             console.log('🚀 Music Visualizer initialized successfully!');
@@ -87,56 +69,6 @@ class MusicVisualizer {
      * Set up UI event listeners
      */
     setupUIEventListeners() {
-        // Energy slider
-        const energySlider = document.getElementById('energy-slider');
-        const energyValue = document.getElementById('energy-value');
-        
-        energySlider.addEventListener('input', (e) => {
-            const value = parseFloat(e.target.value) / 5; // Convert 1-10 to 0.2-2.0
-            energyValue.textContent = e.target.value;
-            if (this.visualizationController) {
-                this.visualizationController.setSensitivity(value);
-            }
-        });
-        
-        // Genre selection
-        const genreSelect = document.getElementById('genre-select');
-        genreSelect.addEventListener('change', (e) => {
-            console.log(`🎵 Genre selected: ${e.target.value}`);
-            // TODO: Implement genre-based visualization presets
-        });
-        
-        // Mood selection
-        const moodSelect = document.getElementById('mood-select');
-        moodSelect.addEventListener('change', (e) => {
-            console.log(`😊 Mood selected: ${e.target.value}`);
-            // TODO: Implement mood-based visualization adjustments
-        });
-        
-        // Color palette selection
-        const colorPalette = document.getElementById('color-palette');
-        colorPalette.addEventListener('change', (e) => {
-            if (this.visualizationController) {
-                this.visualizationController.setColorPalette(e.target.value);
-            }
-        });
-        
-        // Visual style selection
-        const visualStyle = document.getElementById('visual-style');
-        visualStyle.addEventListener('change', (e) => {
-            if (this.visualizationController) {
-                this.visualizationController.setVisualizationMode(e.target.value);
-            }
-        });
-        
-        // Complexity level selection
-        const complexityLevel = document.getElementById('complexity-level');
-        complexityLevel.addEventListener('change', (e) => {
-            if (this.visualizationController) {
-                this.visualizationController.setComplexityLevel(e.target.value);
-            }
-        });
-        
         // File upload
         const audioUpload = document.getElementById('audio-upload');
         audioUpload.addEventListener('change', (e) => {
@@ -151,18 +83,6 @@ class MusicVisualizer {
                 this.togglePlayback();
             });
         }
-        
-        // Video download controls
-        const downloadVideoBtn = document.getElementById('download-video-btn');
-        const videoQuality = document.getElementById('video-quality');
-        
-        downloadVideoBtn.addEventListener('click', () => {
-            this.downloadMusicVideo();
-        });
-        
-        videoQuality.addEventListener('change', (e) => {
-            this.setVideoQuality(e.target.value);
-        });
         
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -183,12 +103,6 @@ class MusicVisualizer {
             // Update UI
             this.playPauseBtn.textContent = 'Play';
             this.playPauseBtn.disabled = false;
-            
-            // Enable download button when file is loaded
-            const downloadBtn = document.getElementById('download-video-btn');
-            if (downloadBtn) {
-                downloadBtn.disabled = false;
-            }
             
             console.log(`✅ File loaded successfully: ${file.name}`);
             
@@ -221,83 +135,7 @@ class MusicVisualizer {
         }
     }
     
-    /**
-     * Download music video of the entire song
-     */
-    async downloadMusicVideo() {
-        if (!this.videoExporter || !this.audioEngine || !this.currentFile) {
-            this.showError('Cannot create video: No audio file loaded or video exporter not available');
-            return;
-        }
-        
-        // Get audio element from audio engine
-        const audioElement = this.audioEngine.audioElement;
-        if (!audioElement || !audioElement.duration) {
-            this.showError('Audio not ready. Please wait for the file to load completely.');
-            return;
-        }
-        
-        // Start from beginning if not playing
-        const wasPlaying = !audioElement.paused;
-        audioElement.currentTime = 0;
-        
-        try {
-            // Update UI
-            const downloadBtn = document.getElementById('download-video-btn');
-            const progressDiv = document.getElementById('recording-progress');
-            const progressFill = document.getElementById('progress-fill');
-            const progressText = document.getElementById('progress-text');
-            
-            downloadBtn.disabled = true;
-            downloadBtn.textContent = '🎬 Creating Video...';
-            progressDiv.classList.remove('hidden');
-            
-            // Start playback if not already playing
-            if (!wasPlaying) {
-                await this.audioEngine.play();
-            }
-            
-            // Start recording with progress updates
-            await this.videoExporter.recordFullSong(audioElement, (progress) => {
-                progressFill.style.width = `${progress}%`;
-                progressText.textContent = `Recording... ${Math.round(progress)}%`;
-            });
-            
-            // Success feedback
-            this.showMessage('🎉 Music video created successfully! Download starting...');
-            
-        } catch (error) {
-            console.error('❌ Video creation failed:', error);
-            this.showError(`Failed to create video: ${error.message}`);
-        } finally {
-            // Restore UI
-            const downloadBtn = document.getElementById('download-video-btn');
-            const progressDiv = document.getElementById('recording-progress');
-            
-            downloadBtn.disabled = false;
-            downloadBtn.textContent = '🎬 Download My Music Video';
-            progressDiv.classList.add('hidden');
-            
-            // Reset audio if it wasn't playing before
-            if (!wasPlaying) {
-                this.audioEngine.pause();
-                audioElement.currentTime = 0;
-            }
-        }
-    }
     
-    /**
-     * Set video quality
-     */
-    setVideoQuality(quality) {
-        if (!this.videoExporter) return;
-        
-        const presets = this.videoExporter.getQualityPresets();
-        if (presets[quality]) {
-            this.videoExporter.setQuality(presets[quality].bitrate);
-            console.log(`🎬 Video quality set to: ${presets[quality].name}`);
-        }
-    }
     
     /**
      * Handle keyboard shortcuts
@@ -307,24 +145,6 @@ class MusicVisualizer {
             case 'Space':
                 event.preventDefault();
                 this.togglePlayback();
-                break;
-            case 'Digit1':
-                this.visualizationController?.setVisualizationMode('spectrum');
-                break;
-            case 'Digit2':
-                this.visualizationController?.setVisualizationMode('circular');
-                break;
-            case 'Digit3':
-                this.visualizationController?.setVisualizationMode('waveform');
-                break;
-            case 'Digit4':
-                this.visualizationController?.setVisualizationMode('particles');
-                break;
-            case 'KeyD':
-                if (event.ctrlKey || event.metaKey) {
-                    event.preventDefault();
-                    this.downloadMusicVideo();
-                }
                 break;
         }
     }
@@ -351,9 +171,6 @@ class MusicVisualizer {
      * Clean up resources
      */
     destroy() {
-        if (this.visualizationController) {
-            this.visualizationController.stop();
-        }
         
         if (this.audioEngine) {
             this.audioEngine.destroy();
@@ -363,11 +180,137 @@ class MusicVisualizer {
             this.fileDropzone.destroy();
         }
         
-        if (this.videoExporter) {
-            this.videoExporter.destroy();
-        }
+        
+        this.stopAnalysisLoop();
         
         console.log('🧹 Music Visualizer destroyed');
+    }
+    
+    /**
+     * Start the audio analysis loop
+     */
+    startAnalysisLoop() {
+        const updateStats = () => {
+            if (this.audioEngine && this.audioEngine.isPlaying) {
+                this.updateAudioStats();
+            }
+            this.analysisLoopId = requestAnimationFrame(updateStats);
+        };
+        updateStats();
+    }
+    
+    /**
+     * Stop the audio analysis loop
+     */
+    stopAnalysisLoop() {
+        if (this.analysisLoopId) {
+            cancelAnimationFrame(this.analysisLoopId);
+            this.analysisLoopId = null;
+        }
+    }
+    
+    /**
+     * Update audio statistics display
+     */
+    updateAudioStats() {
+        if (!this.audioEngine || !this.beatDetection) return;
+        
+        try {
+            // Get current audio analysis data
+            const analysisData = this.audioEngine.getAnalysisData();
+            if (!analysisData || !analysisData.isPlaying) return;
+            
+            // Get beat detection data
+            const beatData = this.beatDetection.analyzeFrame();
+            const rmsStats = this.beatDetection.getRMSStats();
+            const zcrStats = this.beatDetection.getZCRStats();
+            const confidenceStats = this.beatDetection.getConfidenceStats();
+            const beatStats = this.beatDetection.getBeatStats();
+            
+            // Update Audio Analysis Column
+            this.updateStatValue('bpm-value', Math.round(beatData.bpm || beatStats.bpm || 0));
+            this.updateStatValue('rms-value', (rmsStats.current || 0).toFixed(3));
+            this.updateStatValue('zcr-value', (zcrStats.current || 0).toFixed(3));
+            this.updateStatValue('confidence-value', ((confidenceStats.overall || 0) * 100).toFixed(1) + '%');
+            this.updateStatValue('kick-count', beatStats.totalKicks || 0);
+            this.updateStatValue('snare-count', beatStats.totalSnares || 0);
+            this.updateStatValue('subbass-value', (analysisData.bands.subBass || 0).toFixed(2));
+            this.updateStatValue('bass-value', (analysisData.bands.bass || 0).toFixed(2));
+            this.updateStatValue('lowmids-value', (analysisData.bands.lowMids || 0).toFixed(2));
+            this.updateStatValue('mids-value', (analysisData.bands.mids || 0).toFixed(2));
+            this.updateStatValue('highmids-value', (analysisData.bands.highMids || 0).toFixed(2));
+            this.updateStatValue('treble-value', (analysisData.bands.treble || 0).toFixed(2));
+            
+            // Update Beat Detection Column
+            this.updateStatValue('spectral-flux-value', (beatData.spectralFlux || 0).toFixed(3));
+            this.updateStatValue('spectral-centroid-value', (beatData.spectralCentroid || 0).toFixed(3));
+            this.updateStatValue('kick-detected-value', beatData.kickDetected ? 'YES' : 'NO');
+            this.updateStatValue('snare-detected-value', beatData.snareDetected ? 'YES' : 'NO');
+            this.updateStatValue('kick-energy-value', (beatData.kickEnergy || 0).toFixed(2));
+            this.updateStatValue('snare-energy-value', (beatData.snareEnergy || 0).toFixed(2));
+            this.updateStatValue('beat-confidence-value', ((beatData.beatConfidence || 0) * 100).toFixed(1) + '%');
+            this.updateStatValue('kick-confidence-value', ((beatData.kickConfidence || 0) * 100).toFixed(1) + '%');
+            this.updateStatValue('snare-confidence-value', ((beatData.snareConfidence || 0) * 100).toFixed(1) + '%');
+            this.updateStatValue('tempo-confidence-value', ((beatData.tempoConfidence || 0) * 100).toFixed(1) + '%');
+            this.updateStatValue('adaptive-threshold-value', (beatData.adaptiveThreshold || 0).toFixed(3));
+            this.updateStatValue('noisiness-value', zcrStats.noisiness || 'unknown');
+            
+            // Update confidence color
+            const confidenceElement = document.getElementById('confidence-value');
+            if (confidenceElement) {
+                const confidence = confidenceStats.overall || 0;
+                if (confidence > 0.8) {
+                    confidenceElement.className = 'stat-value excellent';
+                } else if (confidence > 0.6) {
+                    confidenceElement.className = 'stat-value good';
+                } else if (confidence > 0.4) {
+                    confidenceElement.className = 'stat-value fair';
+                } else if (confidence > 0.2) {
+                    confidenceElement.className = 'stat-value poor';
+                } else {
+                    confidenceElement.className = 'stat-value unreliable';
+                }
+            }
+            
+            // Update kick/snare detection colors
+            const kickDetectedElement = document.getElementById('kick-detected-value');
+            if (kickDetectedElement) {
+                kickDetectedElement.className = beatData.kickDetected ? 'stat-value excellent' : 'stat-value';
+            }
+            
+            const snareDetectedElement = document.getElementById('snare-detected-value');
+            if (snareDetectedElement) {
+                snareDetectedElement.className = beatData.snareDetected ? 'stat-value excellent' : 'stat-value';
+            }
+            
+            // Update noisiness color
+            const noisinessElement = document.getElementById('noisiness-value');
+            if (noisinessElement) {
+                const noisiness = zcrStats.noisiness || 'unknown';
+                if (noisiness === 'tonal') {
+                    noisinessElement.className = 'stat-value tonal';
+                } else if (noisiness === 'mixed') {
+                    noisinessElement.className = 'stat-value mixed';
+                } else if (noisiness === 'noisy') {
+                    noisinessElement.className = 'stat-value noisy';
+                } else {
+                    noisinessElement.className = 'stat-value';
+                }
+            }
+            
+        } catch (error) {
+            console.warn('Error updating audio stats:', error);
+        }
+    }
+    
+    /**
+     * Update a stat value in the UI
+     */
+    updateStatValue(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = value;
+        }
     }
 }
 
