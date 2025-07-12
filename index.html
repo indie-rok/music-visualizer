@@ -78,12 +78,111 @@
             background: #45a049;
         }
         
+        #download-video-btn {
+            background: #4CAF50;
+            font-size: 16px;
+            padding: 12px 24px;
+        }
+        
+        #download-video-btn:hover:not(:disabled) {
+            background: #45a049;
+        }
+        
+        #download-video-btn:disabled {
+            background: #666666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        #recording-progress {
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        #progress-text {
+            font-size: 12px;
+            color: #fff;
+        }
+        
         #audio-upload {
             margin-bottom: 10px;
         }
         
         .hidden {
             display: none;
+        }
+        
+        #audio-stats {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            min-width: 250px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .stat-label {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .stat-value {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        
+        .stat-value.excellent { color: #44ff44; }
+        .stat-value.good { color: #88ff44; }
+        .stat-value.fair { color: #ffaa00; }
+        .stat-value.poor { color: #ff8844; }
+        .stat-value.unreliable { color: #ff4444; }
+        .stat-value.tonal { color: #44ff44; }
+        .stat-value.mixed { color: #ffaa00; }
+        .stat-value.noisy { color: #ff4444; }
+        
+        #instagram-container {
+            position: absolute;
+            top: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #instagram-canvas {
+            display: block;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
         }
     </style>
 </head>
@@ -139,8 +238,94 @@
             </div>
             
             <div class="control-group">
+                <label for="visual-style">Visual Style:</label>
+                <select id="visual-style">
+                    <option value="spectrum">Frequency Bars</option>
+                    <option value="circular">Abstract</option>
+                    <option value="particles">Particle</option>
+                    <option value="waveform">Flowing</option>
+                    <option value="geometric">Geometric</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="complexity-level">Complexity Level:</label>
+                <select id="complexity-level">
+                    <option value="simple">Simple</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="complex">Complex</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
                 <button id="play-pause-btn">Play</button>
             </div>
+            
+            <div class="control-group">
+                <label for="video-quality">Video Quality:</label>
+                <select id="video-quality">
+                    <option value="medium">Medium (2.5 Mbps)</option>
+                    <option value="low">Low (1 Mbps)</option>
+                    <option value="high">High (5 Mbps)</option>
+                    <option value="ultra">Ultra (10 Mbps)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <button id="download-video-btn" disabled>🎬 Download My Music Video</button>
+                <div id="recording-progress" class="hidden">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span id="progress-text">Recording... 0%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="audio-stats">
+            <div class="stat-row">
+                <span class="stat-label">BPM:</span>
+                <span class="stat-value" id="bpm-value">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">RMS Energy:</span>
+                <span class="stat-value" id="rms-value">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Zero Crossing Rate:</span>
+                <span class="stat-value" id="zcr-value">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Confidence:</span>
+                <span class="stat-value" id="confidence-value">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Kicks:</span>
+                <span class="stat-value" id="kick-count">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Snares:</span>
+                <span class="stat-value" id="snare-count">0</span>
+            </div>
+            
+            <!-- EQ Data -->
+            <div class="stat-row">
+                <span class="stat-label">Bass:</span>
+                <span class="stat-value" id="bass-value">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Mids:</span>
+                <span class="stat-value" id="mids-value">--</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Treble:</span>
+                <span class="stat-value" id="treble-value">--</span>
+            </div>
+        </div>
+        
+        <!-- Instagram Export Canvas -->
+        <div id="instagram-container">
+            <canvas id="instagram-canvas"></canvas>
         </div>
         
         <audio id="audio-element" crossorigin="anonymous" style="display: none;"></audio>

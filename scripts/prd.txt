@@ -165,3 +165,5 @@ Phase 3: Advanced Features (4-6 weeks)
 --- changes
 - To do only back end engine
 - create bigger prd with this 2 features and a whole app as integrated
+- design interface with dyad
+- integrate with marks template
