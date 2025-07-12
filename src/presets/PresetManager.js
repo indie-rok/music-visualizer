@@ -3,6 +3,8 @@
  * Manages loading, switching, and controlling visualization presets
  */
 import { MilkdropPreset } from './MilkdropPreset.js';
+import { GeissPreset } from './GeissPreset.js';
+import { ExplosionPreset } from './ExplosionPreset.js';
 
 export class PresetManager {
     constructor(canvas, audioEngine, beatDetection) {
@@ -29,6 +31,18 @@ export class PresetManager {
             name: 'Milkdrop',
             description: 'Classic Winamp Milkdrop-style visualization',
             class: MilkdropPreset
+        });
+        
+        this.presets.set('geiss', {
+            name: 'Geiss v2',
+            description: 'Field effect visualization with particle trails',
+            class: GeissPreset
+        });
+        
+        this.presets.set('explosion', {
+            name: 'Explosion',
+            description: 'MilkDrop-style plasma visualizer with psychedelic effects',
+            class: ExplosionPreset
         });
         
         // Future presets can be added here:
