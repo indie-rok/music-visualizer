@@ -3,69 +3,333 @@
  * Real-time audio analysis and visualization engine
  */
 
+import { AudioEngine } from './audio/AudioEngine.js';
+import { FileDropzone } from './ui/FileDropzone.js';
+import { VisualizationController } from './visualization/VisualizationController.js';
+
 console.log('🎵 Music Visualizer Loading...');
 
-// Initialize the application when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ DOM Ready - Initializing visualizer...');
-    
-    // Basic canvas setup
-    const canvas = document.getElementById('visualizer-canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Set canvas size
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+class MusicVisualizer {
+    constructor() {
+        this.audioEngine = null;
+        this.visualizationController = null;
+        this.fileDropzone = null;
+        this.isInitialized = false;
+        
+        // DOM elements
+        this.canvas = null;
+        this.audioElement = null;
+        this.playPauseBtn = null;
+        this.recordBtn = null;
+        this.exportBtn = null;
+        
+        // UI state
+        this.isRecording = false;
+        this.currentFile = null;
     }
     
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    // Basic animation loop for testing
-    function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Simple gradient background
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#1a1a2e');
-        gradient.addColorStop(1, '#16213e');
-        
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Add some animated elements for testing
-        const time = Date.now() * 0.002;
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        
-        for (let i = 0; i < 50; i++) {
-            const angle = (i / 50) * Math.PI * 2 + time;
-            const radius = 100 + Math.sin(time + i) * 50;
-            const x = centerX + Math.cos(angle) * radius;
-            const y = centerY + Math.sin(angle) * radius;
+    /**
+     * Initialize the music visualizer
+     */
+    async init() {
+        try {
+            console.log('✅ DOM Ready - Initializing visualizer...');
             
-            ctx.fillStyle = `hsl(${(i * 10 + time * 50) % 360}, 70%, 60%)`;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
+            // Get DOM elements
+            this.canvas = document.getElementById('visualizer-canvas');
+            this.audioElement = document.getElementById('audio-element');
+            this.playPauseBtn = document.getElementById('play-pause-btn');
+            this.recordBtn = document.getElementById('record-btn');
+            this.exportBtn = document.getElementById('export-btn');
+            
+            if (!this.canvas) {
+                throw new Error('Canvas element not found');
+            }
+            
+            // Initialize audio engine
+            this.audioEngine = new AudioEngine();
+            
+            // Initialize visualization controller
+            this.visualizationController = new VisualizationController(this.canvas, this.audioEngine);
+            
+            // Initialize file dropzone
+            this.fileDropzone = new FileDropzone(
+                document.getElementById('app'),
+                this.handleFileLoad.bind(this)
+            );
+            
+            // Set up UI event listeners
+            this.setupUIEventListeners();
+            
+            // Start visualization loop
+            this.visualizationController.start();
+            
+            this.isInitialized = true;
+            console.log('🚀 Music Visualizer initialized successfully!');
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize Music Visualizer:', error);
+            this.showError(`Initialization failed: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Set up UI event listeners
+     */
+    setupUIEventListeners() {
+        // Energy slider
+        const energySlider = document.getElementById('energy-slider');
+        const energyValue = document.getElementById('energy-value');
+        
+        energySlider.addEventListener('input', (e) => {
+            const value = parseFloat(e.target.value) / 5; // Convert 1-10 to 0.2-2.0
+            energyValue.textContent = e.target.value;
+            if (this.visualizationController) {
+                this.visualizationController.setSensitivity(value);
+            }
+        });
+        
+        // Genre selection
+        const genreSelect = document.getElementById('genre-select');
+        genreSelect.addEventListener('change', (e) => {
+            console.log(`🎵 Genre selected: ${e.target.value}`);
+            // TODO: Implement genre-based visualization presets
+        });
+        
+        // Mood selection
+        const moodSelect = document.getElementById('mood-select');
+        moodSelect.addEventListener('change', (e) => {
+            console.log(`😊 Mood selected: ${e.target.value}`);
+            // TODO: Implement mood-based visualization adjustments
+        });
+        
+        // Color palette selection
+        const colorPalette = document.getElementById('color-palette');
+        colorPalette.addEventListener('change', (e) => {
+            if (this.visualizationController) {
+                this.visualizationController.setColorPalette(e.target.value);
+            }
+        });
+        
+        // File upload
+        const audioUpload = document.getElementById('audio-upload');
+        audioUpload.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                this.handleFileLoad(e.target.files[0]);
+            }
+        });
+        
+        // Play/Pause button
+        if (this.playPauseBtn) {
+            this.playPauseBtn.addEventListener('click', () => {
+                this.togglePlayback();
+            });
         }
         
-        requestAnimationFrame(animate);
+        // Record button
+        if (this.recordBtn) {
+            this.recordBtn.addEventListener('click', () => {
+                this.toggleRecording();
+            });
+        }
+        
+        // Export button
+        if (this.exportBtn) {
+            this.exportBtn.addEventListener('click', () => {
+                this.exportVideo();
+            });
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            this.handleKeyboardShortcuts(e);
+        });
     }
     
-    animate();
+    /**
+     * Handle file loading
+     */
+    async handleFileLoad(file) {
+        try {
+            console.log(`📂 Loading file: ${file.name}`);
+            
+            await this.audioEngine.loadAudioFile(file);
+            this.currentFile = file;
+            
+            // Update UI
+            this.playPauseBtn.textContent = 'Play';
+            this.playPauseBtn.disabled = false;
+            this.recordBtn.disabled = false;
+            
+            console.log(`✅ File loaded successfully: ${file.name}`);
+            
+        } catch (error) {
+            console.error('❌ Failed to load file:', error);
+            this.showError(`Failed to load audio file: ${error.message}`);
+        }
+    }
     
-    // UI Event listeners
-    const energySlider = document.getElementById('energy-slider');
-    const energyValue = document.getElementById('energy-value');
+    /**
+     * Toggle audio playback
+     */
+    async togglePlayback() {
+        if (!this.audioEngine || !this.currentFile) {
+            this.showError('No audio file loaded');
+            return;
+        }
+        
+        try {
+            if (this.audioEngine.isPlaying) {
+                this.audioEngine.pause();
+                this.playPauseBtn.textContent = 'Play';
+            } else {
+                await this.audioEngine.play();
+                this.playPauseBtn.textContent = 'Pause';
+            }
+        } catch (error) {
+            console.error('❌ Playback error:', error);
+            this.showError(`Playback failed: ${error.message}`);
+        }
+    }
     
-    energySlider.addEventListener('input', (e) => {
-        energyValue.textContent = e.target.value;
-    });
+    /**
+     * Toggle recording
+     */
+    toggleRecording() {
+        if (this.isRecording) {
+            this.stopRecording();
+        } else {
+            this.startRecording();
+        }
+    }
     
-    console.log('🚀 Visualizer initialized successfully!');
+    /**
+     * Start recording
+     */
+    startRecording() {
+        try {
+            // TODO: Implement MediaRecorder for video recording
+            this.isRecording = true;
+            this.recordBtn.textContent = 'Stop Recording';
+            this.recordBtn.style.backgroundColor = '#f44336';
+            this.exportBtn.classList.remove('hidden');
+            
+            console.log('🔴 Recording started');
+            
+        } catch (error) {
+            console.error('❌ Recording failed:', error);
+            this.showError(`Recording failed: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Stop recording
+     */
+    stopRecording() {
+        try {
+            // TODO: Stop MediaRecorder and process video
+            this.isRecording = false;
+            this.recordBtn.textContent = 'Record';
+            this.recordBtn.style.backgroundColor = '#4CAF50';
+            
+            console.log('⏹️ Recording stopped');
+            
+        } catch (error) {
+            console.error('❌ Failed to stop recording:', error);
+            this.showError(`Failed to stop recording: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Export video
+     */
+    exportVideo() {
+        try {
+            // TODO: Implement video export functionality
+            console.log('📤 Exporting video...');
+            this.showMessage('Export functionality coming soon!');
+            
+        } catch (error) {
+            console.error('❌ Export failed:', error);
+            this.showError(`Export failed: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Handle keyboard shortcuts
+     */
+    handleKeyboardShortcuts(event) {
+        switch (event.code) {
+            case 'Space':
+                event.preventDefault();
+                this.togglePlayback();
+                break;
+            case 'KeyR':
+                if (event.ctrlKey || event.metaKey) {
+                    event.preventDefault();
+                    this.toggleRecording();
+                }
+                break;
+            case 'Digit1':
+                this.visualizationController?.setVisualizationMode('spectrum');
+                break;
+            case 'Digit2':
+                this.visualizationController?.setVisualizationMode('circular');
+                break;
+            case 'Digit3':
+                this.visualizationController?.setVisualizationMode('waveform');
+                break;
+            case 'Digit4':
+                this.visualizationController?.setVisualizationMode('particles');
+                break;
+        }
+    }
+    
+    /**
+     * Show error message
+     */
+    showError(message) {
+        console.error(message);
+        // TODO: Implement toast notification system
+        alert(`Error: ${message}`);
+    }
+    
+    /**
+     * Show info message
+     */
+    showMessage(message) {
+        console.log(message);
+        // TODO: Implement toast notification system
+        alert(message);
+    }
+    
+    /**
+     * Clean up resources
+     */
+    destroy() {
+        if (this.visualizationController) {
+            this.visualizationController.stop();
+        }
+        
+        if (this.audioEngine) {
+            this.audioEngine.destroy();
+        }
+        
+        if (this.fileDropzone) {
+            this.fileDropzone.destroy();
+        }
+        
+        console.log('🧹 Music Visualizer destroyed');
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    const visualizer = new MusicVisualizer();
+    visualizer.init();
+    
+    // Make visualizer available globally for debugging
+    window.musicVisualizer = visualizer;
 });
 
-export default {};
+export default MusicVisualizer;

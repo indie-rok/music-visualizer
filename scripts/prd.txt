@@ -160,3 +160,8 @@ Phase 3: Advanced Features (4-6 weeks)
 - Cost-effective: No per-generation fees
 - Web-based: No software installation required
 - Customizable: Full control over visual parameters
+
+
+--- changes
+- To do only back end engine
+- create bigger prd with this 2 features and a whole app as integrated
