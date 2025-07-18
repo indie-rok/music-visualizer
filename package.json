@@ -25,11 +25,12 @@
   "author": "Music Visualizer Team",
   "license": "MIT",
   "devDependencies": {
-    "vite": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0"
+    "terser": "^5.43.1",
+    "vite": "^5.0.0"
   },
   "dependencies": {
     "three": "^0.160.0"
