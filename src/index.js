@@ -3,6 +3,7 @@
  * Real-time audio analysis and visualization engine
  */
 
+import './styles/main.css';
 import { AudioEngine } from './audio/AudioEngine.js';
 import { BeatDetection } from './audio/BeatDetection.js';
 import { FileDropzone } from './ui/FileDropzone.js';
