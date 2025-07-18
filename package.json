@@ -4,6 +4,7 @@
   "description": "JavaScript-based music visualizer engine with real-time audio analysis and video export capabilities",
   "main": "src/index.js",
   "type": "module",
+  "homepage": "https://indie-rok.github.io/music-visualizer",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
