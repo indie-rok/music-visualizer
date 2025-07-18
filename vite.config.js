@@ -2,8 +2,8 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
-  root: '.',
-  publicDir: 'public',
+  root: 'public',
+  publicDir: false,
   base: '/music-visualizer/',
   server: {
     port: 3000,
@@ -11,14 +11,9 @@ export default defineConfig({
     host: true
   },
   build: {
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true,
-    minify: 'terser',
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'public/index.html')
-      }
-    }
+    minify: 'terser'
   },
   resolve: {
     alias: {
