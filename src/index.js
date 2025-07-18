@@ -123,6 +123,14 @@ class MusicVisualizer {
         // Preset selection
         if (this.presetSelect) {
             this.presetSelect.addEventListener('change', (e) => {
+                // Track preset change
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'preset_changed', {
+                        'event_category': 'visualization',
+                        'event_label': 'preset_selected',
+                        'preset': e.target.value
+                    });
+                }
                 this.loadPreset(e.target.value);
             });
         }
@@ -130,6 +138,15 @@ class MusicVisualizer {
         // Export video button
         if (this.exportVideoBtn) {
             this.exportVideoBtn.addEventListener('click', () => {
+                // Track video export button click
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'video_export_initiated', {
+                        'event_category': 'video_export',
+                        'event_label': 'export_button_clicked',
+                        'preset': this.presetManager?.getCurrentPresetName() || 'unknown',
+                        'theme': this.themeSelect?.value || 'unknown'
+                    });
+                }
                 this.exportVideo();
             });
         }
@@ -137,6 +154,14 @@ class MusicVisualizer {
         // Theme selection
         if (this.themeSelect) {
             this.themeSelect.addEventListener('change', (e) => {
+                // Track theme change
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'theme_changed', {
+                        'event_category': 'visualization',
+                        'event_label': 'theme_selected',
+                        'theme': e.target.value
+                    });
+                }
                 this.setColorTheme(e.target.value);
             });
         }
@@ -197,6 +222,17 @@ class MusicVisualizer {
         try {
             console.log(`📂 Loading file: ${file.name}`);
             
+            // Track audio file upload
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'audio_file_upload', {
+                    'event_category': 'audio',
+                    'event_label': 'file_loaded',
+                    'file_name': file.name,
+                    'file_size_mb': (file.size / 1024 / 1024).toFixed(2),
+                    'file_type': file.type
+                });
+            }
+            
             await this.audioEngine.loadAudioFile(file);
             this.currentFile = file;
             
@@ -214,8 +250,29 @@ class MusicVisualizer {
             
             console.log(`✅ File loaded successfully: ${file.name}`);
             
+            // Track successful load
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'audio_file_loaded_success', {
+                    'event_category': 'audio',
+                    'event_label': 'audio_loaded_success',
+                    'duration': this.audioEngine.audioElement.duration,
+                    'file_name': file.name
+                });
+            }
+            
         } catch (error) {
             console.error('❌ Failed to load file:', error);
+            
+            // Track load error
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'audio_file_upload_error', {
+                    'event_category': 'audio',
+                    'event_label': 'file_load_error',
+                    'error_message': error.message,
+                    'file_name': file.name
+                });
+            }
+            
             this.showError(`Failed to load audio file: ${error.message}`);
         }
     }
@@ -285,6 +342,18 @@ class MusicVisualizer {
         }
         
         try {
+            // Track export start
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'video_export_started', {
+                    'event_category': 'video_export',
+                    'event_label': 'export_started',
+                    'audio_duration': audioElement.duration,
+                    'preset': this.presetManager?.getCurrentPresetName() || 'unknown',
+                    'theme': this.themeSelect?.value || 'unknown',
+                    'quality': this.qualitySelect?.value || 'unknown'
+                });
+            }
+            
             // Update UI
             this.exportVideoBtn.disabled = true;
             this.exportVideoBtn.textContent = 'Creating Video...';
@@ -310,8 +379,33 @@ class MusicVisualizer {
             
             this.showMessage('🎉 Music video created successfully! Download starting...');
             
+            // Track successful export
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'video_export_completed', {
+                    'event_category': 'video_export',
+                    'event_label': 'export_success',
+                    'audio_duration': audioElement.duration,
+                    'preset': this.presetManager?.getCurrentPresetName() || 'unknown',
+                    'theme': this.themeSelect?.value || 'unknown',
+                    'quality': this.qualitySelect?.value || 'unknown'
+                });
+            }
+            
         } catch (error) {
             console.error('❌ Video export failed:', error);
+            
+            // Track export failure
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'video_export_failed', {
+                    'event_category': 'video_export',
+                    'event_label': 'export_error',
+                    'error_message': error.message,
+                    'preset': this.presetManager?.getCurrentPresetName() || 'unknown',
+                    'theme': this.themeSelect?.value || 'unknown',
+                    'quality': this.qualitySelect?.value || 'unknown'
+                });
+            }
+            
             this.showError(`Failed to create video: ${error.message}`);
         } finally {
             // Restore UI
