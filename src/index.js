@@ -49,6 +49,12 @@ class MusicVisualizer {
             this.themeSelect = document.getElementById('theme-select');
             this.copyDebugBtn = document.getElementById('copy-debug-btn');
             this.toggleDebugBtn = document.getElementById('toggle-debug-btn');
+            this.noAudioMessage = document.getElementById('no-audio-message');
+            this.presetGroup = document.getElementById('preset-group');
+            this.themeGroup = document.getElementById('theme-group');
+            this.playbackControls = document.getElementById('playback-controls');
+            this.exportSection = document.getElementById('export-section');
+            this.qualitySelect = document.getElementById('quality-select');
             
             if (!this.instagramCanvas) {
                 throw new Error('Instagram canvas element not found');
@@ -82,6 +88,8 @@ class MusicVisualizer {
             // Set up UI event listeners
             this.setupUIEventListeners();
             
+            // Initialize UI state (no audio loaded)
+            this.updateUIForAudioState(false);
             
             this.isInitialized = true;
             console.log('🚀 Music Visualizer initialized successfully!');
@@ -139,10 +147,18 @@ class MusicVisualizer {
             });
         }
         
-        // Toggle debug info button
+        // Toggle debug info link
         if (this.toggleDebugBtn) {
-            this.toggleDebugBtn.addEventListener('click', () => {
+            this.toggleDebugBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 this.toggleDebugInfo();
+            });
+        }
+        
+        // Quality selection
+        if (this.qualitySelect) {
+            this.qualitySelect.addEventListener('change', (e) => {
+                this.setVideoQuality(e.target.value);
             });
         }
         
@@ -150,6 +166,27 @@ class MusicVisualizer {
         document.addEventListener('keydown', (e) => {
             this.handleKeyboardShortcuts(e);
         });
+    }
+    
+    /**
+     * Update UI based on audio load state
+     */
+    updateUIForAudioState(hasAudio) {
+        if (hasAudio) {
+            // Show controls when audio is loaded
+            if (this.presetGroup) this.presetGroup.classList.remove('hidden');
+            if (this.themeGroup) this.themeGroup.classList.remove('hidden');
+            if (this.playbackControls) this.playbackControls.classList.remove('hidden');
+            if (this.exportSection) this.exportSection.classList.remove('hidden');
+            if (this.noAudioMessage) this.noAudioMessage.classList.add('hidden');
+        } else {
+            // Hide controls when no audio
+            if (this.presetGroup) this.presetGroup.classList.add('hidden');
+            if (this.themeGroup) this.themeGroup.classList.add('hidden');
+            if (this.playbackControls) this.playbackControls.classList.add('hidden');
+            if (this.exportSection) this.exportSection.classList.add('hidden');
+            if (this.noAudioMessage) this.noAudioMessage.classList.remove('hidden');
+        }
     }
     
     /**
@@ -162,7 +199,10 @@ class MusicVisualizer {
             await this.audioEngine.loadAudioFile(file);
             this.currentFile = file;
             
-            // Update UI
+            // Update UI for audio loaded state
+            this.updateUIForAudioState(true);
+            
+            // Update button states
             this.playPauseBtn.textContent = 'Play';
             this.playPauseBtn.disabled = false;
             
@@ -192,10 +232,12 @@ class MusicVisualizer {
             if (this.audioEngine.isPlaying) {
                 this.audioEngine.pause();
                 this.playPauseBtn.textContent = 'Play';
+                this.playPauseBtn.classList.remove('playing');
                 this.presetManager.stop();
             } else {
                 await this.audioEngine.play();
                 this.playPauseBtn.textContent = 'Pause';
+                this.playPauseBtn.classList.add('playing');
                 this.presetManager.start();
             }
         } catch (error) {
@@ -280,6 +322,7 @@ class MusicVisualizer {
             this.presetManager.stop();
             audioElement.currentTime = 0;
             this.playPauseBtn.textContent = 'Play';
+            this.playPauseBtn.classList.remove('playing');
         }
     }
     
@@ -291,6 +334,19 @@ class MusicVisualizer {
         if (currentPreset && typeof currentPreset.setColorTheme === 'function') {
             currentPreset.setColorTheme(themeName);
             console.log(`🎨 Theme changed to: ${themeName}`);
+        }
+    }
+    
+    /**
+     * Set video export quality
+     */
+    setVideoQuality(qualityLevel) {
+        if (this.videoExporter) {
+            const presets = this.videoExporter.getQualityPresets();
+            if (presets[qualityLevel]) {
+                this.videoExporter.setQuality(presets[qualityLevel].bitrate);
+                console.log(`📹 Video quality set to: ${presets[qualityLevel].name}`);
+            }
         }
     }
     

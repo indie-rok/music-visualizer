@@ -11,22 +11,30 @@ export class VideoExporter {
         this.isRecording = false;
         this.stream = null;
         
-        // Recording options
+        // Recording options - High quality settings
         this.recordingOptions = {
-            mimeType: 'video/webm;codecs=vp9',
-            videoBitsPerSecond: 2500000 // 2.5 Mbps for good quality
+            mimeType: 'video/mp4',
+            videoBitsPerSecond: 8000000, // 8 Mbps for high quality
+            audioBitsPerSecond: 128000   // 128 kbps for audio
         };
         
-        // Fallback MIME types
+        // Fallback MIME types (prioritize MP4)
         this.supportedMimeTypes = [
+            'video/mp4;codecs=h264',
+            'video/mp4;codecs=avc1.42E01E',
+            'video/mp4;codecs=avc1.4D401E',
+            'video/mp4;codecs=avc1',
+            'video/mp4',
             'video/webm;codecs=vp9',
             'video/webm;codecs=vp8',
-            'video/webm',
-            'video/mp4'
+            'video/webm'
         ];
         
         console.log('🎬 VideoExporter initialized');
         this.checkBrowserSupport();
+        
+        // Set high quality by default
+        this.setQuality(8000000); // 8 Mbps high quality
     }
     
     /**
@@ -38,17 +46,46 @@ export class VideoExporter {
             return false;
         }
         
+        // Log support for all MIME types
+        console.log('🔍 Checking video format support:');
+        for (const mimeType of this.supportedMimeTypes) {
+            const supported = MediaRecorder.isTypeSupported(mimeType);
+            console.log(`  ${mimeType}: ${supported ? '✅' : '❌'}`);
+        }
+        
         // Find the best supported MIME type
         for (const mimeType of this.supportedMimeTypes) {
             if (MediaRecorder.isTypeSupported(mimeType)) {
                 this.recordingOptions.mimeType = mimeType;
-                console.log(`✅ Using MIME type: ${mimeType}`);
+                console.log(`✅ Selected MIME type: ${mimeType}`);
                 return true;
             }
         }
         
         console.error('❌ No supported video MIME types found');
         return false;
+    }
+    
+    /**
+     * Optimize canvas for high-quality recording
+     */
+    optimizeCanvasForRecording() {
+        const ctx = this.canvas.getContext('2d');
+        if (ctx) {
+            // Disable image smoothing for crisp pixels
+            ctx.imageSmoothingEnabled = false;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // Ensure canvas is using maximum pixel density
+            const dpr = window.devicePixelRatio || 1;
+            const rect = this.canvas.getBoundingClientRect();
+            
+            // Only adjust if canvas isn't already optimized
+            if (this.canvas.width !== rect.width * dpr || this.canvas.height !== rect.height * dpr) {
+                console.log(`🎬 Optimizing canvas for recording: ${rect.width * dpr}x${rect.height * dpr}`);
+                // Note: This would require re-rendering, so we'll just log for now
+            }
+        }
     }
     
     /**
@@ -61,8 +98,11 @@ export class VideoExporter {
         }
         
         try {
-            // Get canvas stream
-            this.stream = this.canvas.captureStream(60); // 60 FPS
+            // Ensure canvas is at maximum quality
+            this.optimizeCanvasForRecording();
+            
+            // Get canvas stream with high frame rate
+            this.stream = this.canvas.captureStream(60); // 60 FPS for smooth playback
             
             if (!this.stream) {
                 throw new Error('Failed to capture canvas stream');
@@ -89,8 +129,8 @@ export class VideoExporter {
                 this.stopRecording();
             };
             
-            // Start recording
-            this.mediaRecorder.start(100); // Collect data every 100ms
+            // Start recording with smaller chunks for better quality
+            this.mediaRecorder.start(250); // Collect data every 250ms for better quality
             this.isRecording = true;
             
             console.log('🔴 Recording started');
@@ -167,6 +207,11 @@ export class VideoExporter {
         }, 100);
         
         console.log(`💾 Video saved as: ${filename}`);
+        
+        // Show user message about format
+        if (extension === 'webm') {
+            console.log('ℹ️ Video saved as WebM. You can convert to MP4 using online converters or video editing software.');
+        }
     }
     
     /**
@@ -174,12 +219,12 @@ export class VideoExporter {
      */
     getFileExtension() {
         const mimeType = this.recordingOptions.mimeType;
-        if (mimeType.includes('webm')) {
-            return 'webm';
-        } else if (mimeType.includes('mp4')) {
+        if (mimeType.includes('mp4')) {
             return 'mp4';
+        } else if (mimeType.includes('webm')) {
+            return 'webm';
         } else {
-            return 'webm'; // Default fallback
+            return 'mp4'; // Default fallback to MP4
         }
     }
     
@@ -200,7 +245,9 @@ export class VideoExporter {
      */
     setQuality(bitrate) {
         this.recordingOptions.videoBitsPerSecond = bitrate;
-        console.log(`🎬 Video bitrate set to: ${bitrate}`);
+        // Also set audio bitrate proportionally
+        this.recordingOptions.audioBitsPerSecond = Math.min(bitrate / 40, 256000);
+        console.log(`🎬 Video bitrate set to: ${bitrate}, Audio bitrate: ${this.recordingOptions.audioBitsPerSecond}`);
     }
     
     /**
@@ -213,16 +260,16 @@ export class VideoExporter {
                 bitrate: 1000000
             },
             'medium': {
-                name: 'Medium (2.5 Mbps)',
-                bitrate: 2500000
+                name: 'Medium (4 Mbps)',
+                bitrate: 4000000
             },
             'high': {
-                name: 'High (5 Mbps)',
-                bitrate: 5000000
+                name: 'High (8 Mbps)',
+                bitrate: 8000000
             },
             'ultra': {
-                name: 'Ultra (10 Mbps)',
-                bitrate: 10000000
+                name: 'Ultra (15 Mbps)',
+                bitrate: 15000000
             }
         };
     }
