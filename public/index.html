@@ -20,29 +20,41 @@
         }
         
         #app {
-            position: relative;
             width: 100vw;
             height: 100vh;
+            display: flex;
         }
         
-        #visualizer-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, #1a1a2e, #16213e);
+        
+        .left-column {
+            width: 300px;
+            flex-shrink: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .right-column {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.05);
         }
         
         #controls {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 260px;
         }
         
         .control-group {
@@ -51,32 +63,61 @@
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 14px;
+            font-weight: 500;
+            color: #f0f0f0;
         }
         
         input, select {
-            width: 200px;
-            padding: 8px;
-            border: none;
-            border-radius: 5px;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
         }
         
         button {
-            padding: 10px 20px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             background: #4CAF50;
             color: white;
             cursor: pointer;
-            margin-right: 10px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
         button:hover {
             background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
         
         #audio-upload {
             margin-bottom: 10px;
@@ -85,63 +126,261 @@
         .hidden {
             display: none;
         }
+        
+        #audio-stats {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Courier New', monospace;
+            display: none;
+            flex-direction: column;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 260px;
+        }
+        
+        .debug-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        
+        #copy-debug-btn {
+            background: #2196F3;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 0;
+        }
+        
+        #copy-debug-btn:hover {
+            background: #1976D2;
+        }
+        
+        #audio-stats.show {
+            display: block;
+        }
+        
+        .stats-column {
+            margin-bottom: 15px;
+        }
+        
+        .column-title {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-align: center;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+        
+        #visualizer-container {
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        #instagram-canvas {
+            display: block;
+            background: #000;
+            max-width: 70vh;
+            max-height: 70vh;
+            width: 400px;
+            height: 400px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .stat-label {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .stat-value {
+            color: #ffaa00;
+            font-weight: bold;
+        }
+        
+        .stat-value.excellent { color: #44ff44; }
+        .stat-value.good { color: #88ff44; }
+        .stat-value.fair { color: #ffaa00; }
+        .stat-value.poor { color: #ff8844; }
+        .stat-value.unreliable { color: #ff4444; }
+        .stat-value.tonal { color: #44ff44; }
+        .stat-value.mixed { color: #ffaa00; }
+        .stat-value.noisy { color: #ff4444; }
+        
     </style>
 </head>
 <body>
     <div id="app">
-        <canvas id="visualizer-canvas"></canvas>
+        <!-- Left Column: Controls and Stats -->
+        <div class="left-column">
+            <div id="controls">
+                <div class="control-group">
+                    <label for="audio-upload">Load Audio File:</label>
+                    <input type="file" id="audio-upload" accept="audio/*">
+                </div>
+                
+                <div class="control-group">
+                    <label for="preset-select">Visualizer Preset:</label>
+                    <select id="preset-select">
+                        <option value="milkdrop">Milkdrop</option>
+                        <option value="geiss">Geiss v2</option>
+                        <option value="explosion">Explosion</option>
+                        <option value="dwave">D-Wave</option>
+                        <option value="doglove">Dog-Love</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="theme-select">Color Theme:</label>
+                    <select id="theme-select">
+                        <option value="cyberpunk">Cyberpunk</option>
+                        <option value="neon">Neon Dreams</option>
+                        <option value="beach">Peaceful Beach</option>
+                        <option value="sunset">Warm Sunset</option>
+                        <option value="forest">Deep Forest</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <button id="play-pause-btn">Play</button>
+                    <button id="export-video-btn" disabled>Export Video</button>
+                    <button id="toggle-debug-btn">Show Debug Info</button>
+                </div>
+            </div>
+            
+            <div id="audio-stats">
+                <div class="debug-header">
+                    <button id="copy-debug-btn">Copy Debug Data</button>
+                </div>
+                
+                <!-- Audio Analysis Column -->
+                <div class="stats-column">
+                    <div class="column-title">Audio Analysis</div>
+                    
+                    <div class="stat-row">
+                        <span class="stat-label">BPM:</span>
+                        <span class="stat-value" id="bpm-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">RMS Energy:</span>
+                        <span class="stat-value" id="rms-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Zero Crossing Rate:</span>
+                        <span class="stat-value" id="zcr-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Confidence:</span>
+                        <span class="stat-value" id="confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kicks:</span>
+                        <span class="stat-value" id="kick-count">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snares:</span>
+                        <span class="stat-value" id="snare-count">0</span>
+                    </div>
+                    
+                    <!-- Frequency Band Data -->
+                    <div class="stat-row">
+                        <span class="stat-label">Sub Bass (20-60Hz):</span>
+                        <span class="stat-value" id="subbass-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Bass (60-250Hz):</span>
+                        <span class="stat-value" id="bass-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Low Mids (250-500Hz):</span>
+                        <span class="stat-value" id="lowmids-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Mids (500-2000Hz):</span>
+                        <span class="stat-value" id="mids-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">High Mids (2-4kHz):</span>
+                        <span class="stat-value" id="highmids-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Treble (4-20kHz):</span>
+                        <span class="stat-value" id="treble-value">--</span>
+                    </div>
+                </div>
+                
+                <!-- Beat Detection Column -->
+                <div class="stats-column">
+                    <div class="column-title">Beat Detection</div>
+                    
+                    <div class="stat-row">
+                        <span class="stat-label">Spectral Flux:</span>
+                        <span class="stat-value" id="spectral-flux-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Spectral Centroid:</span>
+                        <span class="stat-value" id="spectral-centroid-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kick Detected:</span>
+                        <span class="stat-value" id="kick-detected-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snare Detected:</span>
+                        <span class="stat-value" id="snare-detected-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kick Energy:</span>
+                        <span class="stat-value" id="kick-energy-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snare Energy:</span>
+                        <span class="stat-value" id="snare-energy-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Beat Confidence:</span>
+                        <span class="stat-value" id="beat-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Kick Confidence:</span>
+                        <span class="stat-value" id="kick-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Snare Confidence:</span>
+                        <span class="stat-value" id="snare-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Tempo Confidence:</span>
+                        <span class="stat-value" id="tempo-confidence-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Adaptive Threshold:</span>
+                        <span class="stat-value" id="adaptive-threshold-value">--</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Noisiness:</span>
+                        <span class="stat-value" id="noisiness-value">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <div id="controls">
-            <div class="control-group">
-                <label for="audio-upload">Load Audio File:</label>
-                <input type="file" id="audio-upload" accept="audio/*">
-            </div>
-            
-            <div class="control-group">
-                <label for="genre-select">Genre:</label>
-                <select id="genre-select">
-                    <option value="electronic">Electronic</option>
-                    <option value="rock">Rock</option>
-                    <option value="hip-hop">Hip-hop</option>
-                    <option value="jazz">Jazz</option>
-                    <option value="classical">Classical</option>
-                    <option value="synth-pop">Synth-pop</option>
-                </select>
-            </div>
-            
-            <div class="control-group">
-                <label for="energy-slider">Energy Level: <span id="energy-value">5</span></label>
-                <input type="range" id="energy-slider" min="1" max="10" value="5">
-            </div>
-            
-            <div class="control-group">
-                <label for="mood-select">Mood:</label>
-                <select id="mood-select">
-                    <option value="calm">Calm</option>
-                    <option value="energetic">Energetic</option>
-                    <option value="melancholic">Melancholic</option>
-                    <option value="uplifting">Uplifting</option>
-                    <option value="aggressive">Aggressive</option>
-                    <option value="dreamy">Dreamy</option>
-                </select>
-            </div>
-            
-            <div class="control-group">
-                <label for="color-palette">Color Palette:</label>
-                <select id="color-palette">
-                    <option value="sunset-ocean">Sunset-Ocean</option>
-                    <option value="neon">Neon</option>
-                    <option value="monochrome">Monochrome</option>
-                    <option value="vibrant">Vibrant</option>
-                    <option value="muted">Muted</option>
-                    <option value="custom">Custom</option>
-                </select>
-            </div>
-            
-            <div class="control-group">
-                <button id="play-pause-btn">Play</button>
-                <button id="record-btn">Record</button>
-                <button id="export-btn" class="hidden">Export</button>
+        <!-- Right Column: Instagram Canvas -->
+        <div class="right-column">
+            <div id="visualizer-container">
+                <canvas id="instagram-canvas" width="1080" height="1080"></canvas>
             </div>
         </div>
         

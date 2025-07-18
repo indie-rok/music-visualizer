@@ -20,22 +20,27 @@
         }
         
         #app {
-            position: relative;
             width: 100vw;
             height: 100vh;
             display: flex;
+            justify-content: space-around;
+            align-items: center;
         }
         
         
         .left-column {
-            flex: 1;
-            padding: 20px;
+            width: 300px;
+            flex-shrink: 0;
+            padding: 0;
             background: rgba(0, 0, 0, 0.1);
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
         .right-column {
-            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -43,11 +48,14 @@
         }
         
         #controls {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 260px;
         }
         
         .control-group {
@@ -56,31 +64,59 @@
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 14px;
+            font-weight: 500;
+            color: #f0f0f0;
         }
         
         input, select {
-            width: 200px;
-            padding: 8px;
-            border: none;
-            border-radius: 5px;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
         }
         
         button {
-            padding: 10px 20px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             background: #4CAF50;
             color: white;
             cursor: pointer;
-            margin-right: 10px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         
         button:hover {
             background: #45a049;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
         
@@ -95,15 +131,41 @@
         #audio-stats {
             background: rgba(0, 0, 0, 0.8);
             padding: 15px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-family: 'Courier New', monospace;
+            display: none;
+            flex-direction: column;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 260px;
+        }
+        
+        .debug-header {
             display: flex;
-            gap: 30px;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        
+        #copy-debug-btn {
+            background: #2196F3;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 0;
+        }
+        
+        #copy-debug-btn:hover {
+            background: #1976D2;
+        }
+        
+        #audio-stats.show {
+            display: block;
         }
         
         .stats-column {
-            flex: 1;
+            margin-bottom: 15px;
         }
         
         .column-title {
@@ -126,6 +188,8 @@
         #instagram-canvas {
             display: block;
             background: #000;
+            max-width: 70vh;
+            max-height: 70vh;
             width: 400px;
             height: 400px;
         }
@@ -193,11 +257,15 @@
                 <div class="control-group">
                     <button id="play-pause-btn">Play</button>
                     <button id="export-video-btn" disabled>Export Video</button>
-                    <button id="copy-debug-btn">Copy Debug Data</button>
+                    <button id="toggle-debug-btn">Show Debug Info</button>
                 </div>
             </div>
             
             <div id="audio-stats">
+                <div class="debug-header">
+                    <button id="copy-debug-btn">Copy Debug Data</button>
+                </div>
+                
                 <!-- Audio Analysis Column -->
                 <div class="stats-column">
                     <div class="column-title">Audio Analysis</div>

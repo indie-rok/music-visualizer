@@ -62,11 +62,11 @@ export class FileDropzone {
         
         // Add styles
         this.dropIndicator.style.cssText = `
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.8);
             display: none;
             justify-content: center;

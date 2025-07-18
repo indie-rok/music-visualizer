@@ -48,6 +48,7 @@ class MusicVisualizer {
             this.exportVideoBtn = document.getElementById('export-video-btn');
             this.themeSelect = document.getElementById('theme-select');
             this.copyDebugBtn = document.getElementById('copy-debug-btn');
+            this.toggleDebugBtn = document.getElementById('toggle-debug-btn');
             
             if (!this.instagramCanvas) {
                 throw new Error('Instagram canvas element not found');
@@ -135,6 +136,13 @@ class MusicVisualizer {
         if (this.copyDebugBtn) {
             this.copyDebugBtn.addEventListener('click', () => {
                 this.copyDebugDataToClipboard();
+            });
+        }
+        
+        // Toggle debug info button
+        if (this.toggleDebugBtn) {
+            this.toggleDebugBtn.addEventListener('click', () => {
+                this.toggleDebugInfo();
             });
         }
         
@@ -295,6 +303,24 @@ class MusicVisualizer {
                 event.preventDefault();
                 this.togglePlayback();
                 break;
+        }
+    }
+    
+    /**
+     * Toggle debug info visibility
+     */
+    toggleDebugInfo() {
+        const audioStats = document.getElementById('audio-stats');
+        const toggleBtn = this.toggleDebugBtn;
+        
+        if (audioStats && toggleBtn) {
+            if (audioStats.classList.contains('show')) {
+                audioStats.classList.remove('show');
+                toggleBtn.textContent = 'Show Debug Info';
+            } else {
+                audioStats.classList.add('show');
+                toggleBtn.textContent = 'Hide Debug Info';
+            }
         }
     }
     
