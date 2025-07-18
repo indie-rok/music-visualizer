@@ -6,6 +6,7 @@ import { MilkdropPreset } from './MilkdropPreset.js';
 import { GeissPreset } from './GeissPreset.js';
 import { ExplosionPreset } from './ExplosionPreset.js';
 import { DWavePreset } from './DWavePreset.js';
+import { DogLovePreset } from './DogLovePreset.js';
 
 export class PresetManager {
     constructor(canvas, audioEngine, beatDetection) {
@@ -50,6 +51,12 @@ export class PresetManager {
             name: 'D-Wave',
             description: 'Simplified ocean visualizer with waves and jumping fish',
             class: DWavePreset
+        });
+        
+        this.presets.set('doglove', {
+            name: 'Dog-Love',
+            description: 'A happy dog on a walk with dynamic leash waves and city backdrop',
+            class: DogLovePreset
         });
         
         // Future presets can be added here:
